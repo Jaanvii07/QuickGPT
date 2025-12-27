@@ -7,7 +7,6 @@ import openai from '../config/openai.js'
 export const textMessageController=async(req,res)=>{
     try {
         const userId=req.user._id;
-       
         //Check credits 
         if(req.user.credits<1){
             return res.json({success:false  , message:"You don't have enough credits to use this feature"});
@@ -17,10 +16,11 @@ export const textMessageController=async(req,res)=>{
         const { chatId, prompt } = req.body;
 
         const chat=await Chat.findOne({userId , _id:chatId})
+
         chat.messages.push({role:'user', content:prompt , timestamp:Date.now(),isImage:false})
 
         const {choices} = await openai.chat.completions.create({
-            model: "gemini-1.5-flash",
+            model: "gemini-2.5-flash",
             messages: [
                 {
                     role: "user",
@@ -28,7 +28,7 @@ export const textMessageController=async(req,res)=>{
                 },
             ],
         });
-
+        
         const reply={...choices[0].message, timestamp:Date.now(),isImage:false}
        res.json({success:true, reply})
 
@@ -38,6 +38,7 @@ export const textMessageController=async(req,res)=>{
         await User.updateOne({_id:userId} ,{$inc: {credits:-1}})
         
     } catch (error) {
+        console.log("Text msg Error", error)
         res.json({success:false, message:error.message})
     }
 }
@@ -65,7 +66,7 @@ export const imageMesaageController=async(req,res)=>{
         const encodedPrompt=encodeURIComponent(prompt)
 
         //Construct ImageKit AI generation URI 
-        const generateImageUrl=`${process.env.IMAGEKIT_URL_ENDPOINT}/ik-gening-prompt-${encodedPrompt}/quickgpt/${Date.now()}.png?tr=w-800,h-800`;
+        const generateImageUrl=`${process.env.IMAGEKIT_URL_ENDPOINT}/ik-genimg-prompt-${encodedPrompt}/quickgpt/${Date.now()}.png?tr=w-800,h-800`;
 
         //Trigger generation by fecting from ImageKit
         const aiImageResponse=await axios.get(generateImageUrl, {responseType:'arraybuffer'})

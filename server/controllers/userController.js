@@ -71,13 +71,13 @@ export const getPublishedImages=async(req,res)=>{
             {
                 $project:{
                     _id:0,
-                    imageUrl:"$messages .content",
+                    imageUrl:"$messages.content",
                     userName:"$userName"
                 }
             }
         ])
 
-        res.json({success:true,image:publishedImageMessages.reverse()})
+        res.json({success:true,images:publishedImageMessages.reverse()})
     } catch (error) {
         return res.json({success:false , message:error.message})
     }

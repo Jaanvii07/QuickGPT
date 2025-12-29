@@ -16,7 +16,14 @@ await connectDB();
 app.post('/api/stripe' ,express.raw({type:'application/json'}),stripeWenhooks)
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://your-vercel-app.vercel.app"
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
 
 //Routes

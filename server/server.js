@@ -19,7 +19,7 @@ app.post('/api/stripe' ,express.raw({type:'application/json'}),stripeWenhooks)
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://quick-gpt-orpin.vercel.app/"
+    "https://quick-gpt-orpin.vercel.app"
   ],
   credentials: true
 }));

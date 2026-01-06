@@ -2,33 +2,56 @@ import React, { useState } from 'react'
 import { useAppContext } from '../context/AppContext.jsx';
 import toast from 'react-hot-toast';
 
-const Login = ()=> {
-   const [state, setState] = useState("login");
+const Login = () => {
+    const [state, setState] = useState("login");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const {axios , setToken} = useAppContext()
-  
-  const handleSubmit=async(e)=>{
-    e.preventDefault();
-    const url=state==="login"? '/api/user/login':'/api/user/register'
+    const { axios, setToken } = useAppContext()
 
-    try {
-        const {data}=await axios.post(url,{name,email,password})
-        if(data.success){
-             setToken(data.token)
-             localStorage.setItem('token' , data.token)
+    // 1. Define the list of trusted domains
+    // You can add more here (e.g., specific university or company domains)
+    const allowedDomains = [
+        "gmail.com",
+        "yahoo.com",
+        "outlook.com",
+        "hotmail.com",
+        "icloud.com"
+    ];
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        // 2. SECURITY CHECK: Validate Domain on Registration
+        // We only enforce this during 'register', not 'login'
+        if (state === "register") {
+            const domain = email.split("@")[1]; // Get the part after '@'
+            
+            // Check if the domain exists and is in the allowed list
+            if (!domain || !allowedDomains.includes(domain.toLowerCase())) {
+                toast.error("Please use a proper email provider (e.g., Gmail, Outlook)");
+                return; // 🛑 STOP HERE: The function ends, API is NOT called.
+            }
         }
-        else{
-            toast.error(data.message)
-        }
-    } catch (error) {
+
+        const url = state === "login" ? '/api/user/login' : '/api/user/register'
+
+        try {
+            const { data } = await axios.post(url, { name, email, password })
+            if (data.success) {
+                setToken(data.token)
+                localStorage.setItem('token', data.token)
+            }
+            else {
+                toast.error(data.message)
+            }
+        } catch (error) {
             toast.error(error.message)
+        }
     }
-  }
 
-  return (
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 m-auto items-start p-8 py-12 w-80 sm:w-[352px] text-gray-500 rounded-lg shadow-xl border border-gray-200 bg-white">
+    return (
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 m-auto items-start p-8 py-12 w-80 sm:w-[352px] text-gray-500 rounded-lg shadow-xl border border-gray-200 bg-white">
             <p className="text-2xl font-medium m-auto">
                 <span className="text-purple-700">User</span> {state === "login" ? "Login" : "Sign Up"}
             </p>
@@ -59,7 +82,7 @@ const Login = ()=> {
                 {state === "register" ? "Create Account" : "Login"}
             </button>
         </form>
-  )
+    )
 }
 
 export default Login
